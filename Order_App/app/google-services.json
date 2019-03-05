@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "472555424072",
+    "firebase_url": "https://orderfood-b7bbb.firebaseio.com",
+    "project_id": "orderfood-b7bbb",
+    "storage_bucket": "orderfood-b7bbb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:472555424072:android:85187a9abc38406f",
+        "android_client_info": {
+          "package_name": "com.omralcorut.orderfood"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "472555424072-ehlpagb0r1j7bitvpnnov7gpkl475hls.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.omralcorut.orderfood",
+            "certificate_hash": "14045b58e54e107a3835019fd69bd2ee737a7be8"
+          }
+        },
+        {
+          "client_id": "472555424072-srl6s5eli6h1lp8882fgg349d0gqul55.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-ulTrmS9brAOVZWNWc8bdpJfNwhEahGE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "472555424072-srl6s5eli6h1lp8882fgg349d0gqul55.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,9 @@
+Red Tea,2.00
+Black Tea,2.00
+Green Tea,2.00
+Fruit Tea,3.00
+Motcha,2.00
+Latte,3.00
+Hot chocolate,3.00
+Kopi O,1.50
+Kopi C,2.00

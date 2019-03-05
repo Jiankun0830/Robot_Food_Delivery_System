@@ -1,0 +1,6 @@
+Grilled Chicken,11.00
+Grilled Meat Balls,15.00
+Meat Dish,13.00
+Grilled Fish,12.00
+Fish and Chips,12.00
+Hamburger,5.00

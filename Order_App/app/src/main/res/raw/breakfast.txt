@@ -1,0 +1,5 @@
+Breakfast Plate,5.00
+Egg,1.00
+Milk,1.50
+Fruit Plate,4.00
+Butter Bread,2.00

@@ -1,0 +1,8 @@
+Cola,1.50
+Iced Lemon Tea,1.30
+Fanta,1.50
+Sprite,1.50
+Lemonade,2.00
+Fruit Soda,2.00
+Soda,1.00
+Milkshake,3.00
