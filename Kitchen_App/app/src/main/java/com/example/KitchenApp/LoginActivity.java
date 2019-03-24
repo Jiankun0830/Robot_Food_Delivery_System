@@ -9,6 +9,7 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 public class LoginActivity extends AppCompatActivity {
+    public static boolean loginSuccess;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -21,11 +22,12 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 EditText editUsername = findViewById(R.id.editUsername);
                 EditText editPassword = findViewById(R.id.editPassword);
-                String testUsername = editUsername.getText().toString();
-                String testPassword = editPassword.getText().toString();
-                String trueUsername = getString(R.string.username);
-                String truePassword = getString(R.string.password);
-                boolean loginSuccess = testUsername.equals(trueUsername) && testPassword.equals(truePassword);
+                loginSuccess = checkLogin(
+                        editUsername.getText().toString(),
+                        editPassword.getText().toString(),
+                        getString(R.string.username),
+                        getString(R.string.password)
+                );
                 Toast.makeText(LoginActivity.this, "Login success " + loginSuccess, Toast.LENGTH_SHORT).show();
                 if (loginSuccess) {
                     Intent intent = new Intent(LoginActivity.this, MainActivity.class);
@@ -41,5 +43,13 @@ public class LoginActivity extends AppCompatActivity {
                 return false;
             }
         });
+    }
+    static boolean checkLogin(
+            String enteredUsername,
+            String enteredPassword,
+            String trueUsername,
+            String truePassword
+    ) {
+        return enteredUsername.equals(trueUsername) && enteredPassword.equals(truePassword);
     }
 }

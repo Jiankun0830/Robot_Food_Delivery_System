@@ -2,6 +2,7 @@
     <string name="app_name">KitchenApp</string>
     <string name="username">username</string>
     <string name="password">password</string>
+    <string name="login_result">false</string>
     <string name="hint_username">Username</string>
     <string name="hint_password">Password</string>
     <string name="content_description">content</string>

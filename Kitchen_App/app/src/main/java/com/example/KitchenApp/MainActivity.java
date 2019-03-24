@@ -3,12 +3,12 @@ package com.example.KitchenApp;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.constraint.ConstraintLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.CardView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -28,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
+    public static ArrayList<DataSnapshot> foodOrders;
+    public static DatabaseReference myRef;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         final ListView listView = findViewById(R.id.listView);
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        final DatabaseReference myRef = database.getReference("delivery_list");
+        myRef = database.getReference("delivery_list");
         final CardView cardView = findViewById(R.id.activityMainCardView);
         final TextView textView = findViewById(R.id.activityMainTextView);
 
@@ -46,16 +48,11 @@ public class MainActivity extends AppCompatActivity {
                 return false;
             }
         });
-
         myRef.addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                ArrayList<DataSnapshot> foodOrders = new ArrayList<>();
-                CustomAdapter foodOrdersAdapter = new CustomAdapter(getApplicationContext(), foodOrders);
-                listView.setEmptyView(findViewById(R.id.empty));
-                listView.setAdapter(foodOrdersAdapter);
-
+                foodOrders = new ArrayList<>();
                 // If status is "Ready" or "Rejected", we no longer want to display them
                 // Also subtly prioritise accepted items on top
                 for (DataSnapshot item_snapshot : dataSnapshot.getChildren()) {
@@ -75,14 +72,16 @@ public class MainActivity extends AppCompatActivity {
                     cardView.setVisibility(View.GONE);
                     textView.setVisibility(View.GONE);
                 }
+                CustomAdapter foodOrdersAdapter = new CustomAdapter(getApplicationContext(), foodOrders);
+                listView.setEmptyView(findViewById(R.id.empty));
+                listView.setAdapter(foodOrdersAdapter);
                 foodOrdersAdapter.notifyDataSetChanged();
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
     }
-
-    private void createExampleOrders(DatabaseReference myRef) {
+    public static void createExampleOrders(DatabaseReference myRef) {
         // Create example order in firebase for demo purposes
         for (int i = 1; i <= 3; i++) {
             myRef.child("example" + i).child("status").setValue("ACTIVE");
@@ -91,7 +90,9 @@ public class MainActivity extends AppCompatActivity {
             myRef.child("example" + i).child("timestamp").setValue("0000000000000");
         }
     }
-
+    public static void clearOrders(DatabaseReference myRef) {
+        myRef.removeValue();
+    }
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
     private String getField(DataSnapshot dataSnapshot, String field) {
         // For convenience
@@ -101,10 +102,8 @@ public class MainActivity extends AppCompatActivity {
     class CustomAdapter extends BaseAdapter {
         // Based on http://www.prandroid.com/2016/03/dynamic-add-and-remove-item-on-listview.html
         final Context context;
-        final ArrayList<DataSnapshot> foodOrders;
         CustomAdapter(Context context, ArrayList<DataSnapshot> foodOrders) {
             this.context = context;
-            this.foodOrders = foodOrders;
         }
         @Override
         public int getCount() {
