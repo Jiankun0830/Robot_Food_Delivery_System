@@ -18,8 +18,11 @@ import static org.junit.Assert.*;
 public class ExampleInstrumentedTest {
     @Test
     public void useAppContext() throws Exception {
-        // Cogit ntext of the app under test.
+        // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
+
         assertEquals("com.omralcorut.orderfood", appContext.getPackageName());
     }
+
+
 }

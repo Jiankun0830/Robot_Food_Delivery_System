@@ -7,6 +7,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
 
 import com.google.zxing.Result;
 
@@ -26,6 +27,7 @@ public class IntroActivity extends AppCompatActivity implements ZXingScannerView
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
         setContentView(R.layout.activity_intro);
     }
+
 
     //When click scan button, open scanner camera
     public void scanCode(View v) {

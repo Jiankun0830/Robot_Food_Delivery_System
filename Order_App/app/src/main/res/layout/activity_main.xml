@@ -31,6 +31,7 @@
         android:layout_margin="16dp">
 
         <ImageButton
+            android:id="@+id/menuButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
@@ -58,6 +59,7 @@
         android:orientation="horizontal">
 
         <Button
+            android:id="@+id/foodStatusButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
@@ -76,6 +78,7 @@
             android:background="@color/colorPrimaryDark"
             android:onClick="callWaiter"/>
         <Button
+            android:id="@+id/historyButton"
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
