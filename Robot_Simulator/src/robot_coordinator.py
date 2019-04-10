@@ -44,6 +44,7 @@ class RobotCoordinator():
         self.result = None
         self.keys = [] # unique firebase keys corresponds to current_waypoints
         self.max_capacity = 3
+        self.delivery_list_name = "delivery_list"
 
 
         # Firebase registration token comes from the client FCM SDKs (Kitchen app)
@@ -60,6 +61,8 @@ class RobotCoordinator():
         self.client.wait_for_server()
         # rospy.loginfo("Connected to move_base server")
 
+    def set_delivery_list_name(self, list):
+        self.delivery_list_name = list
 
     def go_to(self, goal):
         """
@@ -91,7 +94,7 @@ class RobotCoordinator():
         """
         self.current_waypoints = []
         self.keys = []
-        delivery_list = self.db.child("delivery_list").get(self.user['idToken'])
+        delivery_list = self.db.child(self.delivery_list_name).get(self.user['idToken'])
 
         if delivery_list.val() != None:
             # convert Pyrebase object into dictionary
@@ -109,9 +112,12 @@ class RobotCoordinator():
                     table_name = "TABLE" + str(delivery_dict[key]["table"])
                     self.current_waypoints.append(table_name)
                     self.keys.append(key)
+                    self.db.child(self.delivery_list_name).child(key).child('status').set("DELIVERING",self.user['idToken'])
 
     def run_delivery(self):
         if len(self.current_waypoints) > 0 and len(self.current_waypoints) <= self.max_capacity:
+            # set robot status to "WORKING"
+            self.db.child("robot_status").set("WORKING",self.user['idToken'])
             rospy.loginfo("Robot starting delivery cycle %i: %s",self.cycle,self.current_waypoints)
             # Make sure robot is at kitchen
             self.current_goal = self.create_goal(self.map_points["KITCHEN"])
@@ -130,14 +136,16 @@ class RobotCoordinator():
                 if self.state == 3: #SUCCEEDED
                     rospy.loginfo("Robot reached %s: %s",self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
                     rospy.sleep(5) # Serve food for 5 sec
-                    # remove elements from delivery list
-                    self.db.child("delivery_list").child(self.keys[i]).remove(self.user['idToken'])
+                    # set order status to "DELIVERED"
+                    self.db.child(self.delivery_list_name).child(self.keys[i]).child('status').set("DELIVERED",self.user['idToken'])
                 else: #ABORTED or REJECTED or other status
-                    self.db.child("delivery_list").child(self.keys[i]).child('status').set("FAILED",self.user['idToken'])
+                    self.db.child(self.delivery_list_name).child(self.keys[i]).child('status').set("FAILED",self.user['idToken'])
                     rospy.logwarn("Robot failed to navigate to %s: %s. Hence, delivery reuqest status is set to 'FAILED' and keep as uncleared.",\
                                     self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
+                    # set robot status to "FAILED"
+                    self.db.child("robot_status").set("FAILED",self.user['idToken'])
                     # Get failed order information
-                    # failed_order = self.db.child("delivery_list").child(self.keys[i]).get(self.user['idToken'])
+                    # failed_order = self.db.child(self.delivery_list_name).child(self.keys[i]).get(self.user['idToken'])
                     # send_cloud_msg(self.registration_token,failed_order)
             
             # Send robot back to kitchen
@@ -146,6 +154,8 @@ class RobotCoordinator():
             self.result = self.go_to(self.current_goal)
             self.state = self.client.get_state()
             rospy.loginfo("Robot back to KITCHEN: %s",self.map_points["KITCHEN"])
+            # set robot status to "READY"
+            self.db.child("robot_status").set("READY",self.user['idToken'])
             rospy.loginfo("Robot had finished a delivery cycle.")
 
         elif len(self.current_waypoints) == 0:
@@ -156,35 +166,11 @@ class RobotCoordinator():
             rospy.logerr("Something is WRONG. Robot is trying to send more than %i order(s) at one time.", self.max_capacity)
             sys.exit()
 
-    # def send_cloud_msg(self, registration_token, order):
-    #     # This registration token comes from the client FCM SDKs.
-    #     food = order["food"]
-    #     status = order["status"]
-    #     table = order["table"]
-    #     timestamp = order["timestamp"]
-        
-    #     message = messaging.Message(
-    #         data={
-    #             'msg': 'Robot failed to send an order',
-    #             'food': food,
-    #             'status': status,
-    #             'table': table,
-    #             'timestamp': timestamp,
-    #         },
-    #         token=registration_token,
-    #     )
-
-    #     # Send a message to the device corresponding to the provided
-    #     # registration token.
-    #     response = messaging.send(message)
-    #     # Response is a message ID string.
-    #     print('Successfully sent message:', response)
-
-if __name__ == '__main__':
-
+def main(list_name,round):
     coordinator = RobotCoordinator()
+    coordinator.set_delivery_list_name(list_name)
     
-    while True:
+    while coordinator.cycle < round:
         try:
             coordinator.cycle += 1
             # read waypoints from firebase
@@ -195,5 +181,6 @@ if __name__ == '__main__':
         except rospy.ROSInterruptException:
             print("program interrupted before completion", file=sys.stderr)
             break
-                
-    
+
+if __name__ == '__main__':
+    main("delivery_list",10000)
