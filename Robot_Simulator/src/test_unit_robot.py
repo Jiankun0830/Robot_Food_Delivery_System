@@ -4,6 +4,10 @@ import pytest
 import pyrebase
 import time
 import rospkg
+import os
+import signal
+import subprocess
+
 from robot_coordinator import *
 
 def setup_database():
@@ -36,13 +40,36 @@ def clean_order(db,user):
     result = db.child("test_list").remove(user['idToken'])
     return result
 
+def setup_module(module):
+    """
+    Setup before module
+    """
+    print()
+    print("-------------- setup before module --------------")
+    cmd = "roslaunch esc_bot esc_bot_2.launch"
+    pro = subprocess.Popen(cmd, stdout=subprocess.PIPE, 
+                       shell=True, preexec_fn=os.setsid)
+    time.sleep(5)
+
+def teardown_module(module):
+    """
+    Teardown after module
+    """
+    print("-------------- teardown after module --------------")
+    os.system("killall -9 gzserver gzclient & rosnode kill -a")
+    print("Sleep 10 sec")
+    time.sleep(10)
+
+def pytest_keyboard_interrupt(excinfo):
+    teardown_module()
+
 ##################################### Test cases ############################################
 
 def test_read_waypoints_within_max_cap():
     """
     Unit Test: Test delivery is scheduled within maximum robot capacity
     """
-    print("test_read_waypoints_within_max_cap")
+    print("Unit Test: test_read_waypoints_within_max_cap")
     db, user = setup_database()
     result = clean_order(db,user)
     
@@ -68,7 +95,7 @@ def test_read_waypoints_chronogically():
     """
     Unit Test: Test delivery is scheduled chronogically
     """
-    print("test_read_waypoints_chronogically")
+    print("Unit Test: test_read_waypoints_chronogically")
     db, user = setup_database()
     result = clean_order(db,user)
     
@@ -100,7 +127,7 @@ def test_read_waypoints_only_ready():
     """
     Unit Test: Test delivery scheduled are all in READY state
     """
-    print("test_read_waypoints_only_ready")
+    print("Unit Test: test_read_waypoints_only_ready")
     db, user = setup_database()
     result = clean_order(db,user)
     

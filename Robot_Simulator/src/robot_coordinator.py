@@ -3,6 +3,7 @@
 from __future__ import print_function
 import sys
 import rospy, rospkg
+import json
 
 # Python wrapper for Firebase
 import pyrebase
@@ -18,14 +19,14 @@ from geometry_msgs.msg import PoseStamped
 class RobotCoordinator():
     def __init__(self):
 
-        rospack = rospkg.RosPack()
+        self.rospack = rospkg.RosPack()
 
         self.config = {
         "apiKey": "AIzaSyCkNjSw6fyvpSB2pjbJgbrg9CcF0x9Njt0",
         "authDomain": "orderfood-b7bbb.firebaseapp.com",
         "databaseURL": "https://orderfood-b7bbb.firebaseio.com",
         "storageBucket": "orderfood-b7bbb.appspot.com",
-        "serviceAccount": rospack.get_path('esc_bot')+"/config/orderfood-b7bbb-f90f0ee40141.json"
+        "serviceAccount": self.rospack.get_path('esc_bot')+"/config/orderfood-b7bbb-f90f0ee40141.json"
         }
         
         # setup firebase and user authentication
@@ -39,16 +40,11 @@ class RobotCoordinator():
         self.current_goal = None
         self.current_waypoints = []
         self.map_points = {"KITCHEN":(0,0,1.0), "TABLE1":(0.8,-6.0,1.0), "TABLE2":(0.8,-9.0,1.0), "TABLE3":(2.8,-6.0,1.0), "TABLE4":(2.8,-9.0,1.0), "TABLE5":(6.8,-6.0,1.0), "TABLE6":(6.8,-9.0,1.0)}
-        # self.map_points = {"KITCHEN":(0.0,0.0,1.0), "TABLE1":(4.25,-6.05,1.0), "TABLE2":(4.15,-9,1.0)}
         self.state = None
         self.result = None
         self.keys = [] # unique firebase keys corresponds to current_waypoints
         self.max_capacity = 3
         self.delivery_list_name = "delivery_list"
-
-
-        # Firebase registration token comes from the client FCM SDKs (Kitchen app)
-        # self.registration_token = "XXXXXXXXXXX"
 
         # Initializes a rospy SimpleActionClient
         rospy.init_node('goal_client_py') 
@@ -57,9 +53,17 @@ class RobotCoordinator():
         self.client = actionlib.SimpleActionClient('move_base', move_base_msgs.msg.MoveBaseAction)
 
         # Waits until the action server has started up and started listening for goals.
-        # rospy.loginfo("Waiting for server to start up...")
+        rospy.loginfo("Waiting for server to start up...")
         self.client.wait_for_server()
-        # rospy.loginfo("Connected to move_base server")
+        rospy.loginfo("Connected to move_base server")
+
+    def load_map_points(self,filename):
+        """
+        Load map points from JSON file
+        """
+        file_path = self.rospack.get_path('esc_bot')+"/maps/" + filename + ".json"
+        with open(file_path, 'r') as f:
+            self.map_points = json.load(f)
 
     def set_delivery_list_name(self, list):
         self.delivery_list_name = list
@@ -71,7 +75,7 @@ class RobotCoordinator():
         # Sends the goal to the action server.
         self.client.send_goal(goal)
         # Waits for the server to finish performing the action with 100 sec timeout
-        self.client.wait_for_result(rospy.Duration(100))
+        self.client.wait_for_result(rospy.Duration(80))
         # Get the result of executing the action
         self.result = self.client.get_result()  # A MoveBaseActionResult
 
@@ -122,9 +126,20 @@ class RobotCoordinator():
             # Make sure robot is at kitchen
             self.current_goal = self.create_goal(self.map_points["KITCHEN"])
             self.go_to(self.current_goal)
-            rospy.loginfo("Robot is at KITCHEN: %s",self.map_points["KITCHEN"])
+            self.state = self.client.get_state()
+            rospy.loginfo("Navigation state: " + str(self.state))
+            if self.state == 3: #SUCCEEDED
+                rospy.loginfo("Robot is at KITCHEN: %s",self.map_points["KITCHEN"])
+                rospy.loginfo("Robot loading food.")
+            else: #ABORTED or REJECTED or other status
+                # set robot status to "FAILED"
+                self.db.child("robot_status").set("FAILED",self.user['idToken'])
+                for i in range(len(self.current_waypoints)):
+                    self.db.child(self.delivery_list_name).child(self.keys[i]).child('status').set("FAILED",self.user['idToken'])
+                    rospy.logwarn("Robot failed to navigate to %s: %s. Hence, order status is set to 'FAILED'.",\
+                                    self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
+                return None
 
-            rospy.loginfo("Robot loading food.")
             rospy.sleep(3) # Load food for 3 sec
 
             for i in range(len(self.current_waypoints)):
@@ -133,30 +148,39 @@ class RobotCoordinator():
                 rospy.loginfo("Robot is heading to %s: %s",self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
                 self.result = self.go_to(self.current_goal)
                 self.state = self.client.get_state()
+                rospy.loginfo("Navigation state: " + str(self.state))
                 if self.state == 3: #SUCCEEDED
                     rospy.loginfo("Robot reached %s: %s",self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
-                    rospy.sleep(5) # Serve food for 5 sec
+                    rospy.sleep(3) # Serve food for 3 sec
                     # set order status to "DELIVERED"
                     self.db.child(self.delivery_list_name).child(self.keys[i]).child('status').set("DELIVERED",self.user['idToken'])
                 else: #ABORTED or REJECTED or other status
-                    self.db.child(self.delivery_list_name).child(self.keys[i]).child('status').set("FAILED",self.user['idToken'])
-                    rospy.logwarn("Robot failed to navigate to %s: %s. Hence, delivery reuqest status is set to 'FAILED' and keep as uncleared.",\
-                                    self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
+                    for j in range(i,len(self.current_waypoints)): # set current "DELIVERING" orders to "FAILED"
+                        self.db.child(self.delivery_list_name).child(self.keys[j]).child('status').set("FAILED",self.user['idToken'])
+                        rospy.logwarn("Robot failed to navigate to %s: %s. Hence, order status is set to 'FAILED'.",\
+                                        self.current_waypoints[j], self.map_points[self.current_waypoints[j]])
                     # set robot status to "FAILED"
                     self.db.child("robot_status").set("FAILED",self.user['idToken'])
-                    # Get failed order information
-                    # failed_order = self.db.child(self.delivery_list_name).child(self.keys[i]).get(self.user['idToken'])
-                    # send_cloud_msg(self.registration_token,failed_order)
+                    return None
+                    
             
             # Send robot back to kitchen
             self.current_goal = self.create_goal(self.map_points["KITCHEN"])
             rospy.loginfo("Robot is heading back to KITCHEN: %s",self.map_points["KITCHEN"])
             self.result = self.go_to(self.current_goal)
             self.state = self.client.get_state()
-            rospy.loginfo("Robot back to KITCHEN: %s",self.map_points["KITCHEN"])
-            # set robot status to "READY"
-            self.db.child("robot_status").set("READY",self.user['idToken'])
-            rospy.loginfo("Robot had finished a delivery cycle.")
+            rospy.loginfo("Navigation state: " + str(self.state))
+            if self.state == 3: #SUCCEEDED
+                rospy.loginfo("Robot back to KITCHEN: %s",self.map_points["KITCHEN"])
+                # set robot status to "READY"
+                self.db.child("robot_status").set("READY",self.user['idToken'])
+                rospy.loginfo("Robot had finished a delivery cycle.")
+            else: #ABORTED or REJECTED or other status
+                rospy.logwarn("Robot failed to back to KITCHEN: %s",self.map_points["KITCHEN"])
+                # set robot status to "FAILED"
+                self.db.child("robot_status").set("FAILED",self.user['idToken'])
+                rospy.loginfo("Robot had partially finished a delivery cycle.")
+                return None
 
         elif len(self.current_waypoints) == 0:
             rospy.loginfo("No delivery now.")
@@ -166,11 +190,12 @@ class RobotCoordinator():
             rospy.logerr("Something is WRONG. Robot is trying to send more than %i order(s) at one time.", self.max_capacity)
             sys.exit()
 
-def main(list_name,round):
+def main(list_name, restaurant, round):
     coordinator = RobotCoordinator()
     coordinator.set_delivery_list_name(list_name)
+    coordinator.load_map_points(restaurant)
     
-    while coordinator.cycle < round:
+    while coordinator.cycle < round or round < 0:
         try:
             coordinator.cycle += 1
             # read waypoints from firebase
@@ -180,7 +205,16 @@ def main(list_name,round):
         
         except rospy.ROSInterruptException:
             print("program interrupted before completion", file=sys.stderr)
-            break
+            sys.exit()
 
 if __name__ == '__main__':
-    main("delivery_list",10000)
+    if len(sys.argv) > 2:
+        sys.exit()
+    elif len(sys.argv) == 2:
+        restaurant = sys.argv[1]
+    else:
+        restaurant = "restaurant1"
+
+    list = "delivery_list"
+    round = -1 # negative means infinite round
+    main(list,restaurant,round)

@@ -46,7 +46,7 @@ def setup_module(module):
     """
     print()
     print("-------------- setup before module --------------")
-    cmd = "roslaunch esc_bot esc_bot_2.launch"
+    cmd = "roslaunch esc_bot esc_bot_2_blocked.launch"
     pro = subprocess.Popen(cmd, stdout=subprocess.PIPE, 
                        shell=True, preexec_fn=os.setsid)
     time.sleep(5)
@@ -65,17 +65,16 @@ def pytest_keyboard_interrupt(excinfo):
 
 ##################################### Test cases ############################################
 
-
-# System test
-def test_two_order_delivery():
+# Robustness Test
+def test_path_blocked():
     """
-    System Test: Test 2 orders are delivered successfully within (Status must be "DELIVERED")
+    Robustness Test: Test robot status and orders' status are changed to "FAILED" when it failed to navigate to destination
     """
-    print("System Test: test_two_order_delivery")
+    print("Robustness Test: test_path_blocked")
     db, user = setup_database()
     result = clean_order(db,user)
 
-    # Send 2 food orders
+    # Send 1 food order
     num_order = 2
     for i in range(num_order):
         delivery = {"food": "Chicken Rice",\
@@ -91,8 +90,8 @@ def test_two_order_delivery():
 
     # Check robot status
     robot_status = db.child("robot_status").get(user['idToken'])
-    assert robot_status.val() == "READY"
+    assert robot_status.val() == "FAILED"
     # Check order status
     test_list = db.child("test_list").get(user['idToken'])
     for order in test_list.each():
-        assert order.val()["status"] == "DELIVERED"
+        assert order.val()["status"] == "FAILED"
