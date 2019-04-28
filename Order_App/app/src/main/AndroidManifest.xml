@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.omralcorut.orderfood">
+    package="com.omralcorut.jiankun">
 
     <uses-permission android:name="android.permission.CAMERA" />
 
@@ -11,7 +11,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".IntroActivity"
+            android:name="com.omralcorut.jiankun.IntroActivity"
             android:theme="@style/NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -19,19 +19,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".MainActivity" />
+        <activity android:name="com.omralcorut.jiankun.MainActivity" />
         <activity
-            android:name=".FoodStatusActivity"
+            android:name="com.omralcorut.jiankun.FoodStatusActivity"
             android:label="Food Status" />
         <activity
-            android:name=".MyOrdersActivity"
+            android:name="com.omralcorut.jiankun.MyOrdersActivity"
             android:label="History" />
         <activity
-            android:name=".MenuActivity"
+            android:name="com.omralcorut.jiankun.MenuActivity"
             android:label="Menu" />
-        <activity android:name=".FoodActivity" />
+        <activity android:name="com.omralcorut.jiankun.FoodActivity" />
         <activity
-            android:name=".CartActivity"
+            android:name="com.omralcorut.jiankun.CartActivity"
             android:label="Cart"></activity>
     </application>
 

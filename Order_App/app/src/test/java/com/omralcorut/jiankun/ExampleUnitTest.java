@@ -1,4 +1,4 @@
-package com.omralcorut.orderfood;
+package com.omralcorut.jiankun;
 
 import org.junit.Test;
 

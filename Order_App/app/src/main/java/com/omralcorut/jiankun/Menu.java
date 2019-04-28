@@ -1,4 +1,4 @@
-package com.omralcorut.orderfood;
+package com.omralcorut.jiankun;
 
 /**
  * Created by omral on 23.12.2016.

@@ -1,4 +1,4 @@
-package com.omralcorut.orderfood;
+package com.omralcorut.jiankun;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -94,6 +94,8 @@ public class CartActivity extends AppCompatActivity {
     public void orderCart(View v) {
         if (db.getAllCart().isEmpty()) {
             Toast.makeText(CartActivity.this,"The cart is empty!", Toast.LENGTH_LONG).show();
+        }else if(db.getAllCart().size()>20){
+            Toast.makeText(CartActivity.this,"Sorry, you can order at most 20 items at once", Toast.LENGTH_LONG).show();
         }
         else {
             AlertDialog.Builder adb = new AlertDialog.Builder(CartActivity.this);

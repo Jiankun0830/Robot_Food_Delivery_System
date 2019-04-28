@@ -1,4 +1,4 @@
-package com.omralcorut.orderfood;
+package com.omralcorut.jiankun;
 
 import android.content.Context;
 import android.support.annotation.NonNull;

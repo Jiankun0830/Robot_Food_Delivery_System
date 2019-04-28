@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context="com.omralcorut.orderfood.FoodStatusActivity">
+    tools:context="com.omralcorut.jiankun.FoodStatusActivity">
 
     <RelativeLayout
         android:layout_width="match_parent"

@@ -1,4 +1,4 @@
-package com.omralcorut.orderfood;
+package com.omralcorut.jiankun;
 
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;

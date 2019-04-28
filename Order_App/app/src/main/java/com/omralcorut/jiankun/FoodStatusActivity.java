@@ -1,12 +1,10 @@
-package com.omralcorut.orderfood;
+package com.omralcorut.jiankun;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.constraint.ConstraintLayout;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.CardView;
@@ -39,13 +37,6 @@ public class FoodStatusActivity extends AppCompatActivity {
         final CardView cardView = findViewById(R.id.activityMainCardView);
         final TextView textView = findViewById(R.id.activityMainTextView);
 
-        cardView.setOnLongClickListener(new View.OnLongClickListener() {
-            @Override
-            public boolean onLongClick(View v) {
-                createExampleOrders(myRef);
-                return false;
-            }
-        });
 
         myRef.addValueEventListener(new ValueEventListener() {
             @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -59,7 +50,9 @@ public class FoodStatusActivity extends AppCompatActivity {
                 // If status is "Ready" or "Rejected", we no longer want to display them
                 // Also subtly prioritise accepted items on top
                 for (DataSnapshot item_snapshot : dataSnapshot.getChildren()) {
-                    foodOrders.add(item_snapshot);
+                    if(getField(item_snapshot, "table").equals(String.valueOf(MainActivity.tableNumber))){
+                        foodOrders.add(item_snapshot);
+                    }
                 }
 
                 if (foodOrders.isEmpty()) {
@@ -74,16 +67,6 @@ public class FoodStatusActivity extends AppCompatActivity {
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) { }
         });
-    }
-
-    private void createExampleOrders(DatabaseReference myRef) {
-        // Create example order in firebase for demo purposes
-        for (int i = 1; i <= 3; i++) {
-            myRef.child("example" + i).child("status").setValue("ACTIVE");
-            myRef.child("example" + i).child("food").setValue("Example Order " + i);
-            myRef.child("example" + i).child("table").setValue(i);
-            myRef.child("example" + i).child("timestamp").setValue("0000000000000");
-        }
     }
 
     @RequiresApi(api = Build.VERSION_CODES.KITKAT)
@@ -124,16 +107,10 @@ public class FoodStatusActivity extends AppCompatActivity {
                 convertView = inflater.inflate(R.layout.list_item, parent, false);
                 TextView tvName = convertView.findViewById(R.id.tvName);
                 tvName.setText(getField(foodOrders.get(position), "food"));
-
-                viewHolder.imageReject = convertView.findViewById(R.id.imageReject);
-                viewHolder.imageAccept = convertView.findViewById(R.id.imageAccept);
-                viewHolder.imageReady = convertView.findViewById(R.id.imageReady);
                 viewHolder.status = convertView.findViewById(R.id.status);
-
-                viewHolder.imageReject.setVisibility(View.GONE);
-                viewHolder.imageAccept.setVisibility(View.GONE);
-                viewHolder.imageReady.setVisibility(View.GONE);
                 viewHolder.status.setText(getField(foodOrders.get(position), "status"));
+
+
 
 
             }
@@ -142,9 +119,6 @@ public class FoodStatusActivity extends AppCompatActivity {
     }
 
     private static class ViewHolder {
-        private ImageView imageReject;
-        private ImageView imageAccept;
-        private ImageView imageReady;
         private TextView status;
     }
 

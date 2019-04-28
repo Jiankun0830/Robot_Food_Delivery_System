@@ -1,4 +1,4 @@
-package com.omralcorut.orderfood;
+package com.omralcorut.jiankun;
 
 import android.content.Intent;
 import android.support.design.widget.FloatingActionButton;
@@ -42,7 +42,7 @@ public class FoodActivity extends AppCompatActivity {
 
         //pull food data from txt file
         try {
-            foodArrayList = PlayWithRawFiles(getIntent().getIntExtra("currentMenu", 0));
+            foodArrayList = ProcessRawFiles(getIntent().getIntExtra("currentMenu", 0));
         } catch (IOException e) {
             Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG);
         }
@@ -93,7 +93,7 @@ public class FoodActivity extends AppCompatActivity {
     }
 
     //read food items from storage
-    public ArrayList<Food> PlayWithRawFiles(int id) throws IOException {
+    public ArrayList<Food> ProcessRawFiles(int id) throws IOException {
         ArrayList<Food> result = new ArrayList<Food>();
         String str = "";
         int fileResourceId = id;

@@ -16,31 +16,6 @@
         android:textSize="18sp"
         />
 
-    <ImageView
-        android:id="@+id/imageReject"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:background="@drawable/cross"
-        android:contentDescription="@string/content_description"
-        android:focusable="false" />
-
-    <ImageView
-        android:id="@+id/imageAccept"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:background="@drawable/tick"
-        android:contentDescription="@string/content_description"
-        android:focusable="false"
-        tools:ignore="ContentDescription" />
-
-    <ImageView
-        android:id="@+id/imageReady"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:background="@drawable/food"
-        android:contentDescription="@string/content_description"
-        android:focusable="false"
-        android:visibility="gone" />
 
     <TextView
         android:id="@+id/status"

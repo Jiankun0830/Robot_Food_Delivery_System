@@ -1,4 +1,4 @@
-package com.omralcorut.orderfood;
+package com.omralcorut.jiankun;
 
 import android.content.DialogInterface;
 import android.content.Intent;

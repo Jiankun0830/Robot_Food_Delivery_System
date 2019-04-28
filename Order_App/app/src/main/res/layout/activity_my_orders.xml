@@ -4,7 +4,7 @@
     android:id="@+id/activity_my_orders"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.omralcorut.orderfood.MyOrdersActivity">
+    tools:context="com.omralcorut.jiankun.MyOrdersActivity">
 
     <ListView
         android:id="@+id/list"
