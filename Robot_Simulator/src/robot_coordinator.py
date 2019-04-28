@@ -134,11 +134,8 @@ class RobotCoordinator():
             else: #ABORTED or REJECTED or other status
                 # set robot status to "FAILED"
                 self.db.child("robot_status").set("FAILED",self.user['idToken'])
-                for i in range(len(self.current_waypoints)):
-                    self.db.child(self.delivery_list_name).child(self.keys[i]).child('status').set("FAILED",self.user['idToken'])
-                    rospy.logwarn("Robot failed to navigate to %s: %s. Hence, order status is set to 'FAILED'.",\
-                                    self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
-                return None
+                rospy.logwarn("Robot failed to navigate to %s: %s.",\
+                                self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
 
             rospy.sleep(3) # Load food for 3 sec
 
@@ -155,12 +152,10 @@ class RobotCoordinator():
                     # set order status to "DELIVERED"
                     self.db.child(self.delivery_list_name).child(self.keys[i]).child('status').set("DELIVERED",self.user['idToken'])
                 else: #ABORTED or REJECTED or other status
-                    for j in range(i,len(self.current_waypoints)): # set current "DELIVERING" orders to "FAILED"
-                        self.db.child(self.delivery_list_name).child(self.keys[j]).child('status').set("FAILED",self.user['idToken'])
-                        rospy.logwarn("Robot failed to navigate to %s: %s. Hence, order status is set to 'FAILED'.",\
-                                        self.current_waypoints[j], self.map_points[self.current_waypoints[j]])
                     # set robot status to "FAILED"
                     self.db.child("robot_status").set("FAILED",self.user['idToken'])
+                    rospy.logwarn("Robot failed to navigate to %s: %s.",\
+                                    self.current_waypoints[i], self.map_points[self.current_waypoints[i]])
                     return None
                     
             
@@ -176,10 +171,9 @@ class RobotCoordinator():
                 self.db.child("robot_status").set("READY",self.user['idToken'])
                 rospy.loginfo("Robot had finished a delivery cycle.")
             else: #ABORTED or REJECTED or other status
-                rospy.logwarn("Robot failed to back to KITCHEN: %s",self.map_points["KITCHEN"])
                 # set robot status to "FAILED"
                 self.db.child("robot_status").set("FAILED",self.user['idToken'])
-                rospy.loginfo("Robot had partially finished a delivery cycle.")
+                rospy.logwarn("Robot failed to back to KITCHEN: %s",self.map_points["KITCHEN"])
                 return None
 
         elif len(self.current_waypoints) == 0:

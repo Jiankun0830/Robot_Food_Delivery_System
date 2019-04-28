@@ -7,6 +7,7 @@ import rospkg
 import os
 import signal
 import subprocess
+import random
 
 from robot_coordinator import *
 
@@ -69,7 +70,7 @@ def pytest_keyboard_interrupt(excinfo):
 # System test
 def test_two_order_delivery():
     """
-    System Test: Test 2 orders are delivered successfully within (Status must be "DELIVERED")
+    System Test: Test 2 orders are delivered successfully within 60 seconds (Status must be "DELIVERED")
     """
     print("System Test: test_two_order_delivery")
     db, user = setup_database()
@@ -80,15 +81,47 @@ def test_two_order_delivery():
     for i in range(num_order):
         delivery = {"food": "Chicken Rice",\
                     "status": "READY",\
-                    "table": i+1,\
+                    "table": random.randint(1,12),\
                     "timestamp": time.time()}
         result = db.child("test_list").push(delivery, user['idToken'])
     print("Sent {} orders".format(num_order))
-
     time.sleep(2)
-
+    # start timing
+    start_time = time.time()
     main("test_list","restaurant2",1)
+    print(time.time() - start_time)
+    assert time.time() - start_time < 60 # Check if it takes less than 60 second
+    # Check robot status
+    robot_status = db.child("robot_status").get(user['idToken'])
+    assert robot_status.val() == "READY"
+    # Check order status
+    test_list = db.child("test_list").get(user['idToken'])
+    for order in test_list.each():
+        assert order.val()["status"] == "DELIVERED"
 
+def test_ten_order_delivery():
+    """
+    System Test: Test 10 orders are delivered successfully within 180 seconds (Status must be "DELIVERED")
+    """
+    print("System Test: test_ten_order_delivery")
+    db, user = setup_database()
+    result = clean_order(db,user)
+
+    # Send 10 food orders
+    num_order = 10
+    for i in range(num_order):
+        delivery = {"food": "Chicken Rice",\
+                    "status": "READY",\
+                    "table": random.randint(1,12),\
+                    "timestamp": time.time()}
+        result = db.child("test_list").push(delivery, user['idToken'])
+    print("Sent {} orders".format(num_order))
+    time.sleep(2)
+    # start timing
+    start_time = time.time()
+    main("test_list","restaurant2",4)
+    print(time.time() - start_time)
+    assert time.time() - start_time < 180 # Check if it takes less than 180 second
     # Check robot status
     robot_status = db.child("robot_status").get(user['idToken'])
     assert robot_status.val() == "READY"
