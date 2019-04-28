@@ -51,7 +51,7 @@ dependencies {
     // required if you want to use Mockito for Android tests
     androidTestImplementation 'org.mockito:mockito-android:2.18.3'
     androidTestImplementation 'com.squareup.okhttp3:mockwebserver:3.6.0'
-    androidTestImplementation "com.android.support.test.espresso:espresso-intents:3.0.2";
+    androidTestImplementation "com.android.support.test.espresso:espresso-intents:3.0.2"
 
 }
 apply plugin: 'com.google.gms.google-services'

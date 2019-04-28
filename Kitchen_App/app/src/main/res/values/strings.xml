@@ -7,4 +7,13 @@
     <string name="hint_password">Password</string>
     <string name="content_description">content</string>
     <string name="button_size">64dp</string>
+    <string name="all_orders_completed">All orders completed!</string>
+    <string name="robot_is_blocked">Robot is blocked!</string>
+    <string name="failed_login_count_0">Failed login count: 0</string>
+    <string name="robot_status_working">WORKING</string>
+    <string name="robot_status_blocked">FAILED</string>
+    <string name="food_status_accept">ACCEPT</string>
+    <string name="food_status_active">ACTIVE</string>
+    <string name="food_status_reject">REJECT</string>
+    <string name="food_status_ready">READY</string>
 </resources>
